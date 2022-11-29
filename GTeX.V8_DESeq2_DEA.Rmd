@@ -142,8 +142,7 @@ all(rownames(coldata) %in% colnames(cts))
 coldata$AGE <- gsub("-", "_", coldata$AGE)
 
 
-coldata$AGE = factor(coldata$AGE, c('20_29', '30_39', '40_49', '50_59', '60_69', '70_79')) # age is set in range in this dataset
-
+coldata$AGE = factor(coldata$AGE, c('20_29', '30_39', '40_49', '50_59', '60_69', '70_79')) # age is set in range in this data
 coldata$SEX <- factor(coldata$SEX , c("1","2"))
 
 ```
@@ -177,52 +176,12 @@ dds$SEX <- relevel(dds$SEX, "1")
 
 dds <- DESeq(dds)
 resultsNames(dds) 
-GTex.Res.Age <- results(dds, name="AGE_70_79_vs_20_29", alpha = 0.05)
+GTex.Res.Age <- results(dds, name="AGE_70_79_vs_20_29", alpha = 0.05) # Do the same for other age ranges
 summary(GTex.Res.Age)
  
 ```
 
-
-
-
-
-
-
-```{r}
-
-### perform normalization for gene expression data from GTEX
-
-gtex_brain_expr_cpm = edgeR::cpm(brain_gtex_reads[, intersect(use_samples, colnames(brain_gtex_reads))], prior.count = 1)
-
-rownames(gtex_brain_expr_cpm) = str_extract(brain_gtex_reads$Name, 'ENSG\\d+')
-
-gtex_brain_expr_cpm = gtex_brain_expr_cpm %>% as.data.frame() %>% tibble::rownames_to_column(var = "ensembl_id")
-
-```
-
-
-
-```{r}
-
-# marker genes list (importing and processing)
-
-markers_df <- read.csv(url('https://raw.githubusercontent.com/sonnyc247/MarkerSelection/master/Data/Outputs/CSVs_and_Tables/Markers/All_hodge_regions/new_ALLReg_results_SubclassWithExc.csv'))
-
-cell_types = markers_df$subclass %>% unique()
-marker_list = lapply(cell_types, function(cell_type){
-  return(markers_df %>% filter(subclass == cell_type) %>% pull(gene) %>% unlist())
-})
-names(marker_list) = cell_types
-
-```
-
-
-
-
-
-
-
-
+# Note: You may use ggplot to show how the expression level of SST gene varies between age groups
 
 
 
