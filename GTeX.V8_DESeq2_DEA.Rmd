@@ -210,29 +210,6 @@ summary(GTex.Res.Age)
 
 
 
-```{r}
-
-### perform normalization for gene expression data from GTEX
-
-gtex_brain_expr_cpm = edgeR::cpm(brain_gtex_reads[, intersect(use_samples, colnames(brain_gtex_reads))], prior.count = 1)
-
-rownames(gtex_brain_expr_cpm) = str_extract(brain_gtex_reads$Name, 'ENSG\\d+')
-
-gtex_brain_expr_cpm = gtex_brain_expr_cpm %>% as.data.frame() %>% tibble::rownames_to_column(var = "ensembl_id")
-
-```
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
