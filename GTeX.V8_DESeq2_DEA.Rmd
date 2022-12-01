@@ -15,12 +15,10 @@ This R Markdown document contains codes for DE analysis of GTex_phs000424 datase
 
 ```{r, include=FALSE}
 
-# devtools::install_github('oganm/markerGeneProfile')
 
 library(tidyverse)
 library(magrittr)
 library(cowplot)
-library(markerGeneProfile)
 library(readxl)
 library(ggpubr)
 library(knitr)
