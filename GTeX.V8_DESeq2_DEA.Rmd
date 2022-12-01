@@ -174,12 +174,27 @@ dds$SEX <- relevel(dds$SEX, "1")
 
 dds <- DESeq(dds)
 resultsNames(dds) 
-GTex.Res.Age <- results(dds, name="AGE_70_79_vs_20_29", alpha = 0.05) # Do the same for other age ranges
-summary(GTex.Res.Age)
- 
+
 ```
 
+```{r}
+
+GTex.Res.Age <- results(dds, name="AGE_70_79_vs_20_29", alpha = 0.05)
+summary(GTex.Res.Age)
+
+```
 # Note: You may use ggplot to show how the expression level of SST gene varies between age groups
+
+
+```{r}
+
+Res.df <- GTex.Res.Age %>% as.data.frame %>%
+  rownames_to_column(var= 'EnsemblID')
+
+# get the SST log expression value for AGE 70_79 vs AGE 20_29 in DESeq2 object
+SST.DEres <- Res.df %>% filter(grepl("ENSG00000157005" , Res.df$EnsemblID)) # =-1.7
+
+```
 
 
 
