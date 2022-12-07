@@ -1,0 +1,117 @@
+---
+title: "Script 3_Extra.Codes.For.Plotting"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This script shows some extra codes for plotting SST cell type proportion vs. 
+SST gene expression across age in the GTex_V8 data set. Run this script in 
+continuation of script 1 and 2.
+
+```{r}
+
+library(tidyverse)
+
+```
+
+## Plots
+
+
+```{r}
+
+# if the data is not already in the environment, load it:
+# Counts_cpm <- readRDS(file=file.path('/external/rprshnas01/kcni/nsafarian/GTex_Data_Analysis/Data/GTeX_V8_Counts_cpm_with.sd.more.than0.1_ONLY209.BA9Samples.Rds')) %>% column_to_rownames(var="gene_symbol")
+# 
+# 
+# if the cpm.count data from script-2 is still in the environment"
+SST_Counts_cpm <- Counts_cpm %>% 
+   subset(rownames(.) =="ENSG00000157005.3")%>%
+  t() %>% as.data.frame()%>%
+  tibble::rownames_to_column('SAMPID_full')
+
+# Note: Alternatively you can get the SST gene Normalized counts from DESeq2 Object
+# Gene Ensembl ID for SST is : ENSG00000157005 
+# SST.counts <- cts %>% filter(grepl("ENSG00000157005" , rownames(cts)))%>%
+#   t() %>% as.data.frame()%>% rownames_to_column(var="EnsemblID")
+
+
+# add metadata containing SST cell proportion info to the counts
+SST_merged <- mgp_df %>% 
+  dplyr::select(SAMPID, AGE, RIN, PMI, SEX, RACE, SST)%>% 
+  left_join(SST_Counts_cpm, by= c('SAMPID'= 'SAMPID_full'))%>% 
+  as.data.frame()%>%
+  rename('SST_cell_Prop' ='SST' ,
+         'SST_CPM_Counts' ='ENSG00000157005.3')
+
+```
+
+
+```{r}
+
+# get the SST log expression value for AGE in DESeq2 object
+SST.DE.level <- sigs.df %>% filter(grepl("ENSG00000157005" , sigs.df$EnsemblID)) # =-0.36
+
+```
+
+
+```{r}
+# This plot show there is a positive correlation between SST gene expression 
+# level and SST_cell_proportion.
+  
+ggplot(SST_merged, aes(x=SST_CPM_Counts, y=SST_cell_Prop)) + 
+  geom_point() +
+  stat_smooth(method="lm")+ 
+  annotate("text", x=0, y=0.60, label=(paste0("slope==" , round(coef(lm(SST_merged$SST_cell_Prop ~ SST_merged$SST_CPM_Counts)), 2)))) +
+  ggtitle("SST cell type proportion vs. SST_CPM_Counts)")+
+  theme_bw()+
+  theme(axis.text.y = element_text(size = 10),
+        axis.title =element_text(size=10,face="bold"))+
+  theme(plot.title = element_text(size = 8, face = "bold"))
+  
+
+```
+
+
+
+```{r}
+  
+ggplot(SST_merged, aes(x=AGE, y=SST_CPM_Counts)) + 
+  geom_point() + 
+    geom_smooth(method = "lm", se = F) + 
+  ggtitle("SST gene expression across age groups)")+
+  theme_bw()+
+  theme(axis.text.y = element_text(size = 10),
+        axis.title =element_text(size=10,face="bold"))+
+  theme(plot.title = element_text(size = 8, face = "bold"))
+  
+
+
+```
+
+```{r}
+  
+ggplot(SST_merged, aes(x=AGE, y=SST_cell_Prop)) + 
+  geom_point() +
+  geom_smooth(method="lm")+
+  ggtitle("SST cell type proportion across age groups)")+
+  theme_bw()+
+  theme(axis.text.y = element_text(size = 10),
+        axis.title =element_text(size=10,face="bold"))+
+  theme(plot.title = element_text(size = 8, face = "bold"))
+  
+
+
+```
+
+
+
+
+
+
+
+
