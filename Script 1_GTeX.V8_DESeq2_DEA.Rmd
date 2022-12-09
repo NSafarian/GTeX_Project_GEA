@@ -139,7 +139,7 @@ cts <- round(brain_gtex_reads) %>%  # convert values to integers
 
 ```
 
-## Check coldata & Cts IDs are matching and in the same order
+### *Check coldata & Cts IDs are matching and in the same order*
 
 ```{r}
 
@@ -150,7 +150,32 @@ all(rownames(coldata) %in% colnames(cts))
 
 ```
 
-### Prepare covariates in the coldata accordingly
+### *check for correlations*
+
+```{r}
+
+num.vars <- coldata %>% select (c("AGE", "SMRIN","MHBRNPH", "SMTSISCH",  "TRISCHD")) # Age, RIN, pH, PMI1, PMI2
+
+CovarCor = cor(num.vars, method = "pearson", use = "complete.obs")
+round(CovarCor, 2)
+
+```
+
+```{r}
+
+cormat <- cor(num.vars)
+cormat %>% as.data.frame %>% mutate(var=rownames(.)) %>%
+  pivot_longer(!var, values_to = "value") %>%
+  ggplot(aes(x=name,y=var,fill=abs(value),label=round(value,2))) +
+  geom_tile() + geom_label() + xlab("") + ylab("") +
+  ggtitle("Correlation matrix of our predictors") +
+  labs(fill="Correlation\n(absolute):")
+
+
+```
+
+
+### *Prepare covariates in the coldata accordingly*
 
 ```{r}
 
@@ -222,12 +247,41 @@ summary(GTex.Res.Age)
 
 sigs <- na.omit(GTex.Res.Age) 
 
-sigs <- sigs[sigs$padj <0.05, ] 
+sigs <- sigs[sigs$padj <0.05, ]  # you may not do this step if you will check for Age_NPs expression at the end.
 
 
 sigs.df <- as.data.frame(sigs) %>%
   rownames_to_column(var= 'EnsemblID') #7069 genes
 
+```
+
+### *Add gene names*
+
+```{r}
+
+sigs.df$EnsemblID <- sapply(strsplit(sigs.df$EnsemblID, split="\\." ), "[", 1 )
+
+
+#The following chunk of code uses the ENSEMBL mart, querying with the ENSEMBL gene id and requesting the Entrez gene id and HGNC gene symbol.
+
+library( "biomaRt" )
+ensembl <- useMart( "ensembl", dataset = "hsapiens_gene_ensembl" )
+genemap <- getBM( attributes = 
+                    c("ensembl_gene_id", "hgnc_symbol"),
+                  filters = "ensembl_gene_id", 
+                  values = sigs.df$EnsemblID, 
+                  mart = ensembl)
+
+
+idx <- match(sigs.df$EnsemblID, genemap$ensembl_gene_id )
+sigs.df$entrez <- genemap$external_gene_name[ idx ]
+sigs.df$hgnc_symbol <- genemap$hgnc_symbol[ idx ]
+
+
+```
+
+
+```{r}
 # save
 write.csv(sigs.df, "gtex_v8_AGE_related_sigs_DEGs.csv")
 
@@ -247,6 +301,28 @@ saveRDS(brain_gtex_reads, "gtexV8_RNAseq.Reads_ONLY.BA9.Samples.Rds")
 saveRDS(dds, "GTeX_V8_DESeq2object.dds_209SamplesBA9.Rds")
 
 ```
+
+## Check for NPs gene expression levels
+
+```{r}
+
+# Vanessa's Reported NPs list
+Age_NPs <- read.csv(file=file.path("/external/rprshnas01/kcni/nsafarian/CMC_Exp_Analysis/Neuropeptides/Age_NPs_withEnsemblID.csv")) # 81 NPs
+
+
+matchingNPs <- sigs.df %>% subset(EnsemblID %in% Age_NPs$ensembl_gene_id)
+
+#save
+write.csv(matchingNPs, "List.of.Age-related.NPs.in.GTeX.csv")
+
+```
+
+# Note:
+From the Etienne's Age_NPs list 64 matched the GTex_Age_DEGs result. Though, of
+these 64 NPs, only 25 are significant tags (i.e., FDR<0.05). 
+
+For SST gene --> log2FoldChange= -0.36045913, padj=2.781753e-04
+
 
 
 
