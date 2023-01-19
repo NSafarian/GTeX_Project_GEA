@@ -38,7 +38,7 @@ gtex_samples_meta = read_delim(url("https://storage.googleapis.com/gtex_analysis
 # gtex_pheno_meta = read_delim(url('https://storage.googleapis.com/gtex_analysis_v8/annotations/GTEx_Analysis_v8_Annotations_SubjectPhenotypesDS.txt'), delim = '\t')
 
 
-gtex_subjects_meta = read_delim('/external/rprshnas01/public_datasets/GTEX/GTEx_phs000424/dbGaP-32731/Version8/Phenotype_Data/phs000424.v8.pht002742.v8.p2.c1.GTEx_Subject_Phenotypes.GRU.txt.gz', delim = '\t', skip = 10)
+gtex_subjects_meta = read_delim('/external/rprshnas01/kcni/nsafarian/GTex_Exp_Analysis/Data/urlDownload/phs000424.v8.pht002742.v8.p2.c1.GTEx_Subject_Phenotypes.GRU.txt.gz', delim = '\t', skip = 10)
 
 
 ```
